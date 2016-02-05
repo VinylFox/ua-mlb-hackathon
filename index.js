@@ -14,6 +14,10 @@ app.get('/', function(request, response) {
   response.render('pages/index');
 });
 
+app.get('/db', function(request, response) {
+  response.render('pages/db');
+});
+
 app.get('/api/:type', function(request, response) {
 	switch (request.params.type) {
 		case "currentweather":
@@ -21,6 +25,21 @@ app.get('/api/:type', function(request, response) {
 				response.json(data);
 			});
 			break;
+        case "pitchfx":
+            api.getPitchFx(request.body, function(err, data){
+                response.json(data);
+            });
+            break;
+	}
+});
+
+app.post('/api/:type', function(request, response) {
+	switch (request.params.type) {
+		case "pitchfx":
+            api.getPitchFx(request.body, function(err, data){
+                response.json(data);
+            });
+            break;
 	}
 });
 
