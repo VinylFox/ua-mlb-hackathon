@@ -12,7 +12,7 @@ const client = new Client({
 	host : config.elasticsearch
 });
 
-function getGameLookup() {
+function getGameData() {
 	return new Bluebird(resolve => {
 		return highland(fs.createReadStream(require.resolve('./data/Context.csv')))
 			.invoke("toString")
@@ -33,6 +33,52 @@ function getGameLookup() {
 				"temperature"     : cols[7]
 			}))
 			.reduce({}, (m, data) => (m[data.game_id] = data) && m)
+			.toArray(arr => resolve(arr[0]));
+	});
+
+	return Bluebird
+		.fromCallback(cb => fs.readFile(require.resolve('./data/Context.csv')));
+}
+
+function getPitcherData() {
+	return new Bluebird(resolve => {
+		return highland(fs.createReadStream(require.resolve('./data/Pitching_Statistics.csv')))
+			.invoke("toString")
+			.split("\n")
+			.drop(1)
+			.map(row => row.trim())
+			.filter(row => row)
+			.map(row => row.split(",").slice(1))
+			.map(cols => cols.slice(0, 1).concat(cols.slice(1, 3).join(','), cols.slice(3)))
+			.map(cols => cols.map(col => _.trim(col, '" ')))
+			.map(cols => ({
+				"pitcher_id" : cols[0],
+				"name"       : cols[1],
+				"birth_date" : cols[2],
+				"org"        : cols[3],
+				"league"     : cols[4],
+				"G"          : cols[5],
+				"GS"         : cols[6],
+				"TBF"        : cols[7],
+				"year"       : cols[8],
+				"1B"         : cols[9],
+				"2B"         : cols[10],
+				"3B"         : cols[11],
+				"HR"         : cols[12],
+				"BB"         : cols[13],
+				"IBB"        : cols[14],
+				"HBP"        : cols[15],
+				"SO"         : cols[16],
+				"GB"         : cols[17],
+				"LD"         : cols[18],
+				"FB"         : cols[19],
+				"ERA"        : cols[20],
+				"RA9"        : cols[21],
+				"FIP"        : cols[22],
+				"r_WAR"      : cols[23]
+			}))
+			.map(data => _.pickBy(data, v => v !== "NA" && v !== "*.**"))
+			.reduce({}, (m, data) => (m[data.pitcher_id] = data) && m)
 			.toArray(arr => resolve(arr[0]));
 	});
 
@@ -89,7 +135,8 @@ function importData(lookup) {
 			"runneron_1_st_id" : cols[cols.length - 3],
 			"runneron_2_nd_id" : cols[cols.length - 2],
 			"runneron_3_rd_id" : cols[cols.length - 1],
-			"game"             : lookup[cols[1]]
+			"game"             : lookup.games[cols[1]],
+			"pitcher"          : lookup.pitchers[cols[16]]
 		}))
 		.map(data => _.pickBy(data, v => v !== "NA"))
 		.batch(1000)
@@ -120,6 +167,9 @@ client.indices.delete({
 			}])
 		}
 	}))
-	.then(getGameLookup)
+	.then(() => Bluebird.props({
+		games    : getGameData(),
+		pitchers : getPitcherData()
+	}))
 	.then(importData)
 	.catch(console.log);
