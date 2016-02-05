@@ -12,12 +12,43 @@ const client = new Client({
 	host : config.elasticsearch
 });
 
-function importData() {
+function getGameLookup() {
+	return new Bluebird(resolve => {
+		return highland(fs.createReadStream(require.resolve('./data/Context.csv')))
+			.invoke("toString")
+			.split("\n")
+			.drop(1)
+			.map(row => row.trim())
+			.filter(row => row)
+			.map(row => row.split(",").slice(1))
+			.map(cols => cols.map(col => _.trim(col, '" ')))
+			.map(cols => ({
+				"game_id"         : cols[0],
+				"league"          : cols[1],
+				"day_night"       : cols[2],
+				"playing_surface" : cols[3],
+				"weather"         : cols[4],
+				"wind_speed"      : cols[5],
+				"wind_direction"  : cols[6],
+				"temperature"     : cols[7]
+			}))
+			.reduce({}, (m, data) => (m[data.game_id] = data) && m)
+			.toArray(arr => resolve(arr[0]));
+	});
+
+	return Bluebird
+		.fromCallback(cb => fs.readFile(require.resolve('./data/Context.csv')));
+}
+
+function importData(lookup) {
 	return highland(fs.createReadStream(require.resolve('./data/Pitchfx.csv')))
 		.invoke("toString")
 		.split("\n")
 		.drop(1)
+		.map(row => row.trim())
+		.filter(row => row)
 		.map(row => row.split(","))
+		.map(cols => cols.map(col => _.trim(col, '" ')))
 		.map(cols => ({
 			"row_id"           : cols[0],
 			"game_id"          : cols[1],
@@ -57,9 +88,10 @@ function importData() {
 			"play_by_play"     : cols.slice(35, cols.length - 3).join(','),
 			"runneron_1_st_id" : cols[cols.length - 3],
 			"runneron_2_nd_id" : cols[cols.length - 2],
-			"runneron_3_rd_id" : cols[cols.length - 1]
+			"runneron_3_rd_id" : cols[cols.length - 1],
+			"game"             : lookup[cols[1]]
 		}))
-		.map(data => _.mapValues(_.pickBy(data, v => v !== "NA"), v => _.trim(v, '" ')))
+		.map(data => _.pickBy(data, v => v !== "NA"))
 		.batch(1000)
 		.map(rows => ({
 			body : _(rows)
@@ -88,5 +120,6 @@ client.indices.delete({
 			}])
 		}
 	}))
+	.then(getGameLookup)
 	.then(importData)
 	.catch(console.log);
