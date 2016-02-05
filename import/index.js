@@ -86,6 +86,52 @@ function getPitcherData() {
 		.fromCallback(cb => fs.readFile(require.resolve('./data/Context.csv')));
 }
 
+function getBatterData() {
+	return new Bluebird(resolve => {
+		return highland(fs.createReadStream(require.resolve('./data/Batting_Statistics.csv')))
+			.invoke("toString")
+			.split("\n")
+			.drop(1)
+			.map(row => row.trim())
+			.filter(row => row)
+			.map(row => row.split(",").slice(1))
+			.map(cols => cols.slice(0, 1).concat(cols.slice(1, 3).join(','), cols.slice(3)))
+			.map(cols => cols.map(col => _.trim(col, '" ')))
+			.map(cols => ({
+				"batter_id"  : cols[0],
+				"name"       : cols[1],
+				"birth_date" : cols[2],
+				"org"        : cols[3],
+				"league"     : cols[4],
+				"G"          : cols[5],
+				"AB"         : cols[6],
+				"PA"         : cols[7],
+				"year"       : cols[8],
+				"1B"         : cols[9],
+				"2B"         : cols[10],
+				"3B"         : cols[11],
+				"HR"         : cols[12],
+				"BB"         : cols[13],
+				"HBP"        : cols[14],
+				"IBB"        : cols[15],
+				"SO"         : cols[16],
+				"SB"         : cols[17],
+				"CS"         : cols[18],
+				"AVG"        : cols[19],
+				"SLG"        : cols[20],
+				"OBP"        : cols[21],
+				"wOBA"       : cols[22],
+				"rWAR"       : cols[23]
+			}))
+			.map(data => _.pickBy(data, v => v !== "NA" && v !== "*.**"))
+			.reduce({}, (m, data) => (m[data.batter_id] = data) && m)
+			.toArray(arr => resolve(arr[0]));
+	});
+
+	return Bluebird
+		.fromCallback(cb => fs.readFile(require.resolve('./data/Context.csv')));
+}
+
 function importData(lookup) {
 	return highland(fs.createReadStream(require.resolve('./data/Pitchfx.csv')))
 		.invoke("toString")
@@ -136,7 +182,8 @@ function importData(lookup) {
 			"runneron_2_nd_id" : cols[cols.length - 2],
 			"runneron_3_rd_id" : cols[cols.length - 1],
 			"game"             : lookup.games[cols[1]],
-			"pitcher"          : lookup.pitchers[cols[16]]
+			"pitcher"          : lookup.pitchers[cols[16]],
+			"batter"           : lookup.batters[cols[14]]
 		}))
 		.map(data => _.pickBy(data, v => v !== "NA"))
 		.batch(1000)
@@ -150,7 +197,8 @@ function importData(lookup) {
 				.value()
 		}))
 		.map(req => client.bulk(req).then(res => res.errors && console.log(JSON.stringify(res, null, "\t"))))
-		.flatMap(highland)
+		.map(highland)
+		.mergeWithLimit(3)
 		.through(s => new Bluebird(resolve => s.done(resolve)));
 }
 
@@ -169,7 +217,8 @@ client.indices.delete({
 	}))
 	.then(() => Bluebird.props({
 		games    : getGameData(),
-		pitchers : getPitcherData()
+		pitchers : getPitcherData(),
+		batters  : getBatterData()
 	}))
 	.then(importData)
 	.catch(console.log);
