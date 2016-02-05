@@ -37,7 +37,7 @@
 	"runneron_1_st_id" : { "type" : "integer" },
 	"runneron_2_nd_id" : { "type" : "integer" },
 	"runneron_3_rd_id" : { "type" : "integer" },
-	"game"             : {
+	"game" : {
 		"properties"   : {
 			"game_id"         : { "type" : "string", "index"  : "not_analyzed" },
 			"league"          : { "type" : "string", "index"  : "not_analyzed" },
@@ -47,6 +47,62 @@
 			"wind_speed"      : { "type" : "integer" },
 			"wind_direction"  : { "type" : "string", "index"  : "not_analyzed" },
 			"temperature"     : { "type" : "integer" }
+		}
+	},
+	"pitcher" : {
+		"properties" : {
+			"pitcher_id" : { "type" : "string", "index"  : "not_analyzed" },
+			"name"       : { "type" : "string", "index"  : "not_analyzed" },
+			"birth_date" : { "type" : "date",   "format" : "YYYY-MM-DD"   },
+			"org"        : { "type" : "string", "index"  : "not_analyzed" },
+			"league"     : { "type" : "string", "index"  : "not_analyzed" },
+			"G"          : { "type" : "integer" },
+			"GS"         : { "type" : "integer" },
+			"TBF"        : { "type" : "integer" },
+			"year"       : { "type" : "integer" },
+			"1B"         : { "type" : "integer" },
+			"2B"         : { "type" : "integer" },
+			"3B"         : { "type" : "integer" },
+			"HR"         : { "type" : "integer" },
+			"BB"         : { "type" : "integer" },
+			"IBB"        : { "type" : "integer" },
+			"HBP"        : { "type" : "integer" },
+			"SO"         : { "type" : "integer" },
+			"GB"         : { "type" : "double"  },
+			"LD"         : { "type" : "double"  },
+			"FB"         : { "type" : "double"  },
+			"ERA"        : { "type" : "double"  },
+			"RA9"        : { "type" : "double"  },
+			"FIP"        : { "type" : "double"  },
+			"r_WAR"      : { "type" : "double"  }
+		}
+	},
+	"batter" : {
+		"properties" : {
+			"batter_id"  : { "type" : "string", "index"  : "not_analyzed" },
+			"name"       : { "type" : "string", "index"  : "not_analyzed" },
+			"birth_date" : { "type" : "date",   "format" : "YYYY-MM-DD"   },
+			"org"        : { "type" : "string", "index"  : "not_analyzed" },
+			"league"     : { "type" : "string", "index"  : "not_analyzed" },
+			"G"          : { "type" : "string", "index"  : "not_analyzed" },
+			"AB"         : { "type" : "integer" },
+			"PA"         : { "type" : "integer" },
+			"year"       : { "type" : "integer" },
+			"1B"         : { "type" : "integer" },
+			"2B"         : { "type" : "integer" },
+			"3B"         : { "type" : "integer" },
+			"HR"         : { "type" : "integer" },
+			"BB"         : { "type" : "integer" },
+			"HBP"        : { "type" : "integer" },
+			"IBB"        : { "type" : "integer" },
+			"SO"         : { "type" : "integer" },
+			"SB"         : { "type" : "integer" },
+			"CS"         : { "type" : "integer" },
+			"AVG"        : { "type" : "double"  },
+			"SLG"        : { "type" : "double"  },
+			"OBP"        : { "type" : "double"  },
+			"wOBA"       : { "type" : "double"  },
+			"rWAR"       : { "type" : "double"  }
 		}
 	}
 }
