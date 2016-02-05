@@ -23,5 +23,8 @@
     "heroku",
     "express"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "elasticsearch": "^10.1.3"
+  }
 }
