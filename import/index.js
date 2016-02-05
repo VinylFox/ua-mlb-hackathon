@@ -54,11 +54,10 @@ function importData() {
 			"init_accel_y"     : cols[32],
 			"init_accel_z"     : cols[33],
 			"hit_trajectory"   : cols[34],
-			// Play by plays have commas and cause junk data
-			//"play_by_play"     : cols[35],
-			//"runneron_1_st_id" : cols[36],
-			//"runneron_2_nd_id" : cols[37],
-			//"runneron_3_rd_id" : cols[38]
+			"play_by_play"     : cols.slice(35, cols.length - 3).join(','),
+			"runneron_1_st_id" : cols[cols.length - 3],
+			"runneron_2_nd_id" : cols[cols.length - 2],
+			"runneron_3_rd_id" : cols[cols.length - 1]
 		}))
 		.map(data => _.mapValues(_.pickBy(data, v => v !== "NA"), v => _.trim(v, '" ')))
 		.batch(1000)
