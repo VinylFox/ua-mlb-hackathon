@@ -1,0 +1,7 @@
+{
+  "name": "Baseball and Weather Logic System",
+  "description": "",
+  "repository": "https://github.com/kjvalencik/ua-mlb-hackathon",
+  "logo": "http://bawls.herokuapp.com/node.svg",
+  "keywords": ["node", "express", "static"]
+}
