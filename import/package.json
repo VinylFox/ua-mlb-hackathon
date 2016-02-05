@@ -1,0 +1,16 @@
+{
+  "name": "ua-mlb-hackathon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-preset-es2015": "^6.3.13",
+    "bluebird": "^3.2.1",
+    "elasticsearch": "^10.1.3",
+    "highland": "^2.6.0",
+    "lodash": "^4.2.1"
+  }
+}
